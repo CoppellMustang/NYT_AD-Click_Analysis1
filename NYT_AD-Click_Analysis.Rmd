@@ -1,0 +1,74 @@
+---
+title: "NYT_AD-Click_Analysis"
+author: "Manjula Kottegoda"
+date: "June 27, 2016"
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data Prep for Live Session 8
+#### Module 8.9
+
+Download the clickstream data from <http://stat.columbia.edu/~rachel/datasets/nyt13.csv>. And load to a Dataframe.
+
+```{r}
+# Load data to a Data frame
+#NYT_DF13 <- read.csv("Analysis/Data/nyt13.csv",blank.lines.skip=TRUE)
+#NYT_DF13 <- read.csv(url("http://stat.columbia.edu/~rachel/datasets/nyt1.csv"))
+NYT_DF13 <- read.csv("Analysis/Data/nyt1.csv",blank.lines.skip=TRUE)
+head(NYT_DF13) # Examine 1-5 records of Data frame
+str(NYT_DF13) # Examine structure of Data frame
+summary(NYT_DF13) # Examine summery of Data frame
+```
+
+
+###  Create a new variable ___ageGroup___ that categorizes age into following groups: 
+
+####    < 18, 18–24, 25–34, 35–44, 45–54, 55–64 and 65+
+
+```{r}
+#Before cutting we look at the distribution of the Age values
+hist(NYT_DF13$Age, main="Histogram of Age Distribution", xlab="Age")
+
+#Add a new column called age group to Data frame and add designation based on the age intervals
+NYT_DF13$ageGroup <- cut(NYT_DF13$Age, c(-Inf, 18, 24, 34, 44, 54, 64, Inf))
+
+#Step above created values such as (-Inf,18]  (18,24]  (24,34]  (34,44]  (44,54]  (54,64]  (64, Inf]  
+# this needs to be cleaned up to show ranges like below using the to the levels attribute of a variable
+levels(NYT_DF13$ageGroup) <- c("<18", "18-24", "25-34", "35-44", "45-54", "55-64", "65+")
+
+#Now we look at the data frame again
+head(NYT_DF13) # Examine 1-5 records of Data frame with ageGroup column
+str(NYT_DF13) # Examine structure of Data frame with ageGroup column
+
+```
+
+###For a single day (like May 14):
+###Plot distributions of number impressions and click-through-rate (CTR = click/impression) for the age groups.
+
+CTR is calculated by deviding clicks by Impressions. So get a copy of dataframe and drop rows with 0 values from it. Then Add another column wit the CTR value.
+
+```{r}
+NYT_DF13_CTR <- subset(NYT_DF13, Impressions>0)
+NYT_DF13_CTR$CTR <- NYT_DF13_CTR$Clicks/NYT_DF13_CTR$Impressions
+#Now we look at the new data frame 
+head(NYT_DF13_CTR) # Examine 1-5 records
+str(NYT_DF13_CTR) # Examine structure
+
+
+#Now plotI Impressions
+library(ggplot2) # used for visualizations
+ggplot(subset(NYT_DF13_CTR, Impressions>0), aes(x=Impressions, fill=ageGroup))+
+    geom_histogram(binwidth=1)
+
+
+#Now plotI CTR
+ggplot(subset(NYT_DF13_CTR, CTR>0), aes(x=CTR, fill=ageGroup))+
+    labs(title="click-through-rate (CTR = click/impression) for the age groups for May 14")+
+    geom_histogram(binwidth=.025)
+```
